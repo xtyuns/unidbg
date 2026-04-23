@@ -125,7 +125,7 @@ public class DalvikVM64 extends BaseVM implements VM {
                     return addLocalObject(dvmMethod.toReflectedMethod());
                 }
             }
-        }) ;
+        });
 
         Pointer _GetSuperclass = svcMemory.registerSvc(new Arm64Svc() {
             @Override
@@ -199,6 +199,10 @@ public class DalvikVM64 extends BaseVM implements VM {
             @Override
             public long handle(Emulator<?> emulator) {
                 long exception = throwable == null ? JNI_NULL : (throwable.hashCode() & 0xffffffffL);
+                if (throwable != null) {
+                    globalObjectMap.put(Long.valueOf(exception).intValue(), new ObjRef(throwable, true));
+                }
+
                 if (log.isDebugEnabled()) {
                     log.debug("ExceptionOccurred: 0x{}", Long.toHexString(exception));
                 }
@@ -3475,7 +3479,7 @@ public class DalvikVM64 extends BaseVM implements VM {
                 if (log.isDebugEnabled()) {
                     log.debug("GetStringRegion string={}, value={}, start={}, length={}, buf{}, lr={}", string, value, start, length, buf, context.getLRPointer());
                 }
-                byte[] data = Arrays.copyOfRange(bytes, start, start+length+1);
+                byte[] data = Arrays.copyOfRange(bytes, start, start + length + 1);
                 buf.write(0, data, 0, data.length);
                 return JNI_OK;
             }
@@ -3499,7 +3503,7 @@ public class DalvikVM64 extends BaseVM implements VM {
                 if (log.isDebugEnabled()) {
                     log.debug("GetStringUTFRegion string={}, value={}, start={}, length={}, buf{}, lr={}", string, value, start, length, buf, context.getLRPointer());
                 }
-                byte[] data = Arrays.copyOfRange(bytes, start, start+length+1);
+                byte[] data = Arrays.copyOfRange(bytes, start, start + length + 1);
                 buf.write(0, data, 0, data.length);
                 return JNI_OK;
             }
@@ -3624,7 +3628,7 @@ public class DalvikVM64 extends BaseVM implements VM {
                 }
                 if (dvmGlobalObject != null) {
                     return dvmGlobalObject.weak ? JNIWeakGlobalRefType : JNIGlobalRefType;
-                } else if(dvmLocalObject != null) {
+                } else if (dvmLocalObject != null) {
                     return JNILocalRefType;
                 } else {
                     return JNIInvalidRefType;
